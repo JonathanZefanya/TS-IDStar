@@ -1,15 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import {
   downloadMyTimesheet,
   fetchMyTimesheet,
   saveMyTimesheetEntries,
-  submitMyTimesheet
+  submitMyTimesheet,
+  updateMyClientLogo
 } from '../api/client';
 import { calculateTotalHours, currentPeriod, generateMonthRows } from '../lib/calendar';
 import type { CalendarRow, TimesheetEntry, User } from '../types';
 
 interface TimesheetEditorProps {
   user: User;
+  onUserUpdate?: (user: User) => void;
+}
+
+function readLogoFile(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      reject(new Error('Logo harus berupa PNG atau JPG.'));
+      return;
+    }
+
+    if (file.size > 1_000_000) {
+      reject(new Error('Ukuran logo maksimal 1 MB.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Gagal membaca file logo.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 function toEntryPayload(rows: CalendarRow[]): TimesheetEntry[] {
@@ -35,7 +56,7 @@ function downloadBlob(blob: Blob, filename: string) {
   window.URL.revokeObjectURL(downloadUrl);
 }
 
-export function TimesheetEditor({ user }: TimesheetEditorProps) {
+export function TimesheetEditor({ user, onUserUpdate }: TimesheetEditorProps) {
   const [period, setPeriod] = useState(currentPeriod());
   const [rows, setRows] = useState<CalendarRow[]>([]);
   const [holidayDates, setHolidayDates] = useState<string[]>([]);
@@ -46,6 +67,7 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -169,6 +191,43 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
       setFeedback({ kind: 'error', text: 'Gagal melakukan export Excel.' });
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function handleLogoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+
+    setUploadingLogo(true);
+    setFeedback(null);
+
+    try {
+      const clientLogoDataUrl = await readLogoFile(file);
+      const result = await updateMyClientLogo(clientLogoDataUrl);
+      onUserUpdate?.(result.user);
+      setFeedback({ kind: 'success', text: 'Logo client berhasil disimpan.' });
+    } catch (error) {
+      setFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Gagal menyimpan logo client.' });
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
+  async function handleRemoveLogo() {
+    setUploadingLogo(true);
+    setFeedback(null);
+
+    try {
+      const result = await updateMyClientLogo(null);
+      onUserUpdate?.(result.user);
+      setFeedback({ kind: 'success', text: 'Logo client berhasil dihapus.' });
+    } catch (error) {
+      setFeedback({ kind: 'error', text: 'Gagal menghapus logo client.' });
+    } finally {
+      setUploadingLogo(false);
     }
   }
 
@@ -302,9 +361,18 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
           <strong>Current user</strong>
           <span>{user.name} - {user.department} - {user.project}</span>
         </div>
-        <p>
-          Weekend dan hari libur dari master data dikunci otomatis. Activity pada hari libur akan mengikuti nama harinya.
-        </p>
+        <div className="logo-uploader">
+          {user.clientLogoDataUrl ? <img src={user.clientLogoDataUrl} alt="Client logo preview" /> : <span>No client logo</span>}
+          <label className="secondary-button">
+            {uploadingLogo ? 'Uploading...' : 'Upload logo'}
+            <input type="file" accept="image/png,image/jpeg" onChange={handleLogoChange} disabled={uploadingLogo} />
+          </label>
+          {user.clientLogoDataUrl ? (
+            <button type="button" className="link-button danger" onClick={handleRemoveLogo} disabled={uploadingLogo}>
+              Remove
+            </button>
+          ) : null}
+        </div>
       </div>
     </section>
   );

@@ -4,6 +4,7 @@ const prisma = require('../config/prisma');
 const env = require('../config/env');
 const asyncHandler = require('../utils/async-handler');
 const createHttpError = require('../utils/http-error');
+const { normalizeClientLogoDataUrl } = require('../utils/client-logo');
 
 const userSelect = {
   id: true,
@@ -15,6 +16,7 @@ const userSelect = {
   project: true,
   teamLeadName: true,
   deptHeadName: true,
+  clientLogoDataUrl: true,
   username: true,
   createdAt: true,
   updatedAt: true
@@ -80,7 +82,23 @@ const me = asyncHandler(async (req, res) => {
   res.json({ user });
 });
 
+const updateMyClientLogo = asyncHandler(async (req, res) => {
+  const clientLogoDataUrl = normalizeClientLogoDataUrl(req.body.clientLogoDataUrl);
+  if (clientLogoDataUrl === undefined) {
+    throw createHttpError(400, 'clientLogoDataUrl is required.');
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { clientLogoDataUrl },
+    select: userSelect
+  });
+
+  res.json({ user });
+});
+
 module.exports = {
   login,
-  me
+  me,
+  updateMyClientLogo
 };

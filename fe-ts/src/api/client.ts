@@ -54,6 +54,11 @@ export async function fetchMe() {
   return data;
 }
 
+export async function updateMyClientLogo(clientLogoDataUrl: string | null) {
+  const { data } = await api.put<{ user: User }>('/auth/me/client-logo', { clientLogoDataUrl });
+  return data;
+}
+
 export async function fetchMyTimesheet(period: string) {
   const { data } = await api.get<TimesheetDetailResponse>('/timesheets/me', {
     params: { period }

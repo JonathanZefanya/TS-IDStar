@@ -24,6 +24,7 @@ Aplikasi ini terdiri dari backend Express + Prisma + MySQL dan frontend React + 
 - Lunch break bersifat opsional dan mendukung format durasi (`01:00`) atau rentang waktu (`12:00 - 13:00`).
 - Weekend dan holiday otomatis dikunci dari input timesheet.
 - Admin dashboard untuk mengelola user, timesheet, dan master hari libur.
+- Upload logo user/client dari workspace user atau form admin user.
 - Export timesheet ke Excel menggunakan template `fe-ts/public/template.xlsx`.
 - UI responsif untuk desktop dan mobile.
 
@@ -216,6 +217,7 @@ Data user seed:
 4. Sistem menghitung total hours secara otomatis.
 5. User menyimpan draft, submit timesheet, atau export Excel.
 6. Admin dapat mengelola user, master holiday, dan file timesheet yang sudah dibuat.
+7. Logo user/client yang tersimpan akan ditempel ke area `LOGO USER/CLIENT` pada export Excel.
 
 ## Lunch Break Rules
 
@@ -264,6 +266,7 @@ http://localhost:4000/api
 | --- | --- | --- |
 | POST | `/auth/login` | Login user dan mendapatkan token |
 | GET | `/auth/me` | Mengambil profile user aktif |
+| PUT | `/auth/me/client-logo` | Update atau hapus logo client user aktif |
 
 ### User Timesheet
 

@@ -10,6 +10,7 @@ const {
   normalizeTime,
   parseHolidayDates
 } = require('../utils/time');
+const { getLogoExtension } = require('../utils/client-logo');
 
 const TEMPLATE_CANDIDATES = [
   path.resolve(__dirname, '..', '..', '..', 'fe-ts', 'public', 'template.xlsx'),
@@ -49,6 +50,10 @@ function getDisplayHoursFromTimeRange(startTime, lunchBreak, endTime) {
   return calculateTotalHours(normalizedStart, normalizedLunch, normalizedEnd).toFixed(2);
 }
 
+function formatTotalHoursCell(value) {
+  return value ? `${value} Hours` : '';
+}
+
 function formatDateDisplay(dateKey) {
   const [year, month, day] = String(dateKey).split('-');
   return `${day}/${month}/${year}`;
@@ -58,20 +63,86 @@ function signatureLabel(value) {
   return `( ${value || '-'} )`;
 }
 
-function appendBottomRightLogo(workbook, worksheet) {
-  const templateLogo = workbook.model?.media?.find((item) => item?.type === 'image' && item?.buffer);
-  if (!templateLogo) {
+function getDataUrlBuffer(dataUrl) {
+  const base64 = String(dataUrl || '').split(',')[1];
+  return base64 ? Buffer.from(base64, 'base64') : null;
+}
+
+function getPngSize(buffer) {
+  if (!buffer || buffer.length < 24 || buffer.toString('ascii', 1, 4) !== 'PNG') {
+    return null;
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20)
+  };
+}
+
+function getJpegSize(buffer) {
+  if (!buffer || buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    return null;
+  }
+
+  let offset = 2;
+  while (offset + 9 < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+
+    const marker = buffer[offset + 1];
+    const length = buffer.readUInt16BE(offset + 2);
+    const isStartOfFrame = marker >= 0xc0 && marker <= 0xc3;
+
+    if (isStartOfFrame) {
+      return {
+        width: buffer.readUInt16BE(offset + 7),
+        height: buffer.readUInt16BE(offset + 5)
+      };
+    }
+
+    offset += 2 + length;
+  }
+
+  return null;
+}
+
+function getImageSize(dataUrl) {
+  const buffer = getDataUrlBuffer(dataUrl);
+  return getPngSize(buffer) || getJpegSize(buffer) || { width: 220, height: 60 };
+}
+
+function fitInsideBox(size, maxWidth, maxHeight) {
+  const ratio = Math.min(maxWidth / size.width, maxHeight / size.height, 1);
+  return {
+    width: Math.round(size.width * ratio),
+    height: Math.round(size.height * ratio)
+  };
+}
+
+function appendClientLogo(workbook, worksheet, clientLogoDataUrl) {
+  const extension = getLogoExtension(clientLogoDataUrl);
+  if (!extension) {
     return;
   }
 
-  const logoImageId = workbook.addImage({
-    buffer: templateLogo.buffer,
-    extension: templateLogo.extension || 'png'
+  const clientLogoImageId = workbook.addImage({
+    base64: clientLogoDataUrl,
+    extension
   });
 
-  worksheet.addImage(logoImageId, {
-    tl: { col: 9.1, row: 42.1 },
-    ext: { width: 120, height: 50 }
+  ['I7', 'J7', 'K7', 'I8', 'J8', 'K8', 'I9', 'J9', 'K9'].forEach((cellAddress) => {
+    worksheet.getCell(cellAddress).value = '';
+  });
+
+  const imageSize = getImageSize(clientLogoDataUrl);
+  const fittedSize = fitInsideBox(imageSize, 250, 54);
+
+  worksheet.addImage(clientLogoImageId, {
+    tl: { col: 8.05, row: 6.15 },
+    ext: fittedSize,
+    editAs: 'oneCell'
   });
 }
 
@@ -250,7 +321,7 @@ async function buildTimesheetWorkbook({ user, period, entries = [], holidayDates
     worksheet.getCell(`D${rowNumber}`).value = rowData.startTime;
     worksheet.getCell(`E${rowNumber}`).value = rowData.lunchBreak;
     worksheet.getCell(`F${rowNumber}`).value = rowData.endTime;
-    worksheet.getCell(`G${rowNumber}`).value = rowData.totalHours;
+    worksheet.getCell(`G${rowNumber}`).value = formatTotalHoursCell(rowData.totalHours);
     worksheet.getCell(`H${rowNumber}`).value = rowData.blocked ? rowData.blockedRemark : rowData.activity;
 
     applyNormalDayStyle(worksheet, rowNumber);
@@ -271,7 +342,7 @@ async function buildTimesheetWorkbook({ user, period, entries = [], holidayDates
   worksheet.getCell('H47').value = signatureLabel(user.deptHeadName);
   worksheet.getCell('H48').value = 'Dept. Head';
 
-  appendBottomRightLogo(workbook, worksheet);
+  appendClientLogo(workbook, worksheet, user.clientLogoDataUrl);
 
   return workbook.xlsx.writeBuffer();
 }

@@ -8,6 +8,7 @@ export interface User {
   project: string;
   teamLeadName: string;
   deptHeadName: string;
+  clientLogoDataUrl?: string | null;
   username: string;
   createdAt?: string;
   updatedAt?: string;

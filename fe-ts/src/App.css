@@ -637,6 +637,37 @@
   margin-bottom: 4px;
 }
 
+.logo-field {
+  grid-column: 1 / -1;
+}
+
+.logo-uploader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.logo-uploader img,
+.logo-uploader > span {
+  width: 148px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text-secondary);
+  object-fit: contain;
+  padding: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.logo-uploader input[type='file'] {
+  display: none;
+}
+
 .form-grid,
 .modal-form-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));

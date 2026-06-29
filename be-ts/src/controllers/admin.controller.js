@@ -10,6 +10,7 @@ const {
   summarizeEntries
 } = require('../services/timesheet.service');
 const { isValidPeriod } = require('../utils/time');
+const { normalizeClientLogoDataUrl } = require('../utils/client-logo');
 
 const userSelect = {
   id: true,
@@ -21,6 +22,7 @@ const userSelect = {
   project: true,
   teamLeadName: true,
   deptHeadName: true,
+  clientLogoDataUrl: true,
   username: true,
   createdAt: true,
   updatedAt: true
@@ -95,6 +97,7 @@ function normalizeUserPayload(body) {
     project: String(body.project || '').trim(),
     teamLeadName: String(body.teamLeadName || '').trim(),
     deptHeadName: String(body.deptHeadName || '').trim(),
+    clientLogoDataUrl: normalizeClientLogoDataUrl(body.clientLogoDataUrl),
     username: String(body.username || '').trim(),
     password: String(body.password || '')
   };
@@ -208,6 +211,7 @@ const createUser = asyncHandler(async (req, res) => {
       project: payload.project,
       teamLeadName: payload.teamLeadName,
       deptHeadName: payload.deptHeadName,
+      clientLogoDataUrl: payload.clientLogoDataUrl ?? null,
       username: payload.username,
       password: await bcrypt.hash(payload.password, 10)
     },
@@ -249,6 +253,7 @@ const updateUser = asyncHandler(async (req, res) => {
     project: payload.project,
     teamLeadName: payload.teamLeadName,
     deptHeadName: payload.deptHeadName,
+    clientLogoDataUrl: payload.clientLogoDataUrl ?? null,
     username: payload.username
   };
 

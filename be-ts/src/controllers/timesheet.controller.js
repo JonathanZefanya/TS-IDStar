@@ -20,6 +20,7 @@ const userSelect = {
   project: true,
   teamLeadName: true,
   deptHeadName: true,
+  clientLogoDataUrl: true,
   username: true,
   createdAt: true,
   updatedAt: true

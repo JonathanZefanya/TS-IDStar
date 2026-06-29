@@ -47,6 +47,19 @@ function App() {
     setSession(null);
   }
 
+  function handleUserUpdate(nextUser: AuthSession['user']) {
+    if (!session) {
+      return;
+    }
+
+    const nextSession = {
+      ...session,
+      user: nextUser
+    };
+    saveSession(nextSession);
+    setSession(nextSession);
+  }
+
   if (booting) {
     return (
       <div className="boot-screen">
@@ -135,7 +148,7 @@ function App() {
           </div>
         </section>
 
-        {isAdmin ? <AdminPanel user={session.user} /> : <TimesheetEditor user={session.user} />}
+        {isAdmin ? <AdminPanel user={session.user} /> : <TimesheetEditor user={session.user} onUserUpdate={handleUserUpdate} />}
 
         {!isAdmin ? (
           <section className="panel-card help-card">

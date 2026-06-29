@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
   createAdminUser,
   deleteAdminTimesheet,
@@ -27,6 +27,7 @@ interface UserDraft {
   project: string;
   teamLeadName: string;
   deptHeadName: string;
+  clientLogoDataUrl: string | null;
   username: string;
   password: string;
 }
@@ -42,9 +43,29 @@ function createUserDraft(value?: User): UserDraft {
     project: value?.project || '',
     teamLeadName: value?.teamLeadName || '',
     deptHeadName: value?.deptHeadName || '',
+    clientLogoDataUrl: value?.clientLogoDataUrl || null,
     username: value?.username || '',
     password: ''
   };
+}
+
+function readLogoFile(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      reject(new Error('Logo harus berupa PNG atau JPG.'));
+      return;
+    }
+
+    if (file.size > 1_000_000) {
+      reject(new Error('Ukuran logo maksimal 1 MB.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Gagal membaca file logo.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -151,6 +172,7 @@ export function AdminPanel({ user }: AdminPanelProps) {
         project: userDraft.project,
         teamLeadName: userDraft.teamLeadName,
         deptHeadName: userDraft.deptHeadName,
+        clientLogoDataUrl: userDraft.clientLogoDataUrl,
         username: userDraft.username,
         password: userDraft.password
       };
@@ -192,6 +214,21 @@ export function AdminPanel({ user }: AdminPanelProps) {
       }
     } catch (error) {
       setFeedback({ kind: 'error', text: 'Gagal menghapus user.' });
+    }
+  }
+
+  async function handleUserLogoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+
+    try {
+      const clientLogoDataUrl = await readLogoFile(file);
+      setUserDraft((current) => ({ ...current, clientLogoDataUrl }));
+    } catch (error) {
+      setFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Gagal membaca logo client.' });
     }
   }
 
@@ -550,6 +587,21 @@ export function AdminPanel({ user }: AdminPanelProps) {
                   <span>Dept Head</span>
                   <input value={userDraft.deptHeadName} onChange={(event) => setUserDraft((current) => ({ ...current, deptHeadName: event.target.value }))} />
                 </label>
+                <div className="field-group logo-field">
+                  <span>Logo User/Client</span>
+                  <div className="logo-uploader">
+                    {userDraft.clientLogoDataUrl ? <img src={userDraft.clientLogoDataUrl} alt="Client logo preview" /> : <span>No client logo</span>}
+                    <label className="secondary-button">
+                      Upload logo
+                      <input type="file" accept="image/png,image/jpeg" onChange={handleUserLogoChange} />
+                    </label>
+                    {userDraft.clientLogoDataUrl ? (
+                      <button type="button" className="link-button danger" onClick={() => setUserDraft((current) => ({ ...current, clientLogoDataUrl: null }))}>
+                        Remove
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
                 <label className="field-group">
                   <span>Username</span>
                   <input value={userDraft.username} onChange={(event) => setUserDraft((current) => ({ ...current, username: event.target.value }))} />
