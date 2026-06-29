@@ -1,148 +1,90 @@
-# Timesheet Management System Starter
+# Timesheet Management System
 
-Starter full-stack untuk aplikasi Timesheet Management System dengan:
+Timesheet Management System adalah aplikasi full-stack untuk pencatatan aktivitas kerja bulanan, pengelolaan data karyawan, validasi hari libur, dan export file Excel sesuai template timesheet perusahaan.
 
-- Frontend: React + TypeScript + Vite
-- Backend: Node.js + Express
-- Database: MySQL
-- ORM: Prisma
-- Auth: JWT
-- Excel export: exceljs
+Aplikasi ini terdiri dari backend Express + Prisma + MySQL dan frontend React + TypeScript + Vite.
 
-## Folder Tree
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, TypeScript, Vite |
+| Backend | Node.js, Express |
+| Database | MySQL |
+| ORM | Prisma |
+| Authentication | JWT |
+| Excel Export | exceljs |
+| Styling | CSS custom dashboard layout |
+
+## Key Features
+
+- Login berbasis JWT untuk admin dan user.
+- Workspace user untuk input timesheet bulanan.
+- Perhitungan total jam otomatis dari start time, lunch break, dan end time.
+- Lunch break mendukung format durasi (`01:00`) dan rentang waktu (`12:00 - 13:00`).
+- Weekend dan holiday otomatis dikunci dari input timesheet.
+- Admin dashboard untuk mengelola user, timesheet, dan master hari libur.
+- Export timesheet ke Excel menggunakan template `fe-ts/public/template.xlsx`.
+- UI responsif untuk desktop dan mobile.
+
+## Project Structure
+
+```text
+TS-IDStar/
+  be-ts/
+    prisma/
+      migrations/
+      schema.prisma
+      seed.js
+    src/
+      config/
+      controllers/
+      middlewares/
+      routes/
+      services/
+      utils/
+      app.js
+      server.js
+    .env.example
+    package.json
+
+  fe-ts/
+    public/
+      template.xlsx
+    src/
+      api/
+      components/
+      lib/
+      App.tsx
+      App.css
+      index.css
+      main.tsx
+      types.ts
+    .env.example
+    package.json
+```
+
+## Prerequisites
+
+Pastikan environment lokal sudah memiliki:
+
+- Node.js 18 atau lebih baru
+- npm
+- MySQL
+- Database kosong untuk aplikasi, misalnya `timesheet_management`
+
+## Environment Variables
 
 ### Backend
 
-```text
-be-ts/
-  .env.example
-  package.json
-  prisma/
-    schema.prisma
-    seed.js
-    migrations/
-      20260402025823_init/
-        migration.sql
-  src/
-    app.js
-    server.js
-    config/
-      env.js
-      prisma.js
-    controllers/
-      auth.controller.js
-      admin.controller.js
-      timesheet.controller.js
-    middlewares/
-      auth.middleware.js
-      error.middleware.js
-      role.middleware.js
-    routes/
-      auth.routes.js
-      admin.routes.js
-      timesheet.routes.js
-    services/
-      excel.service.js
-      timesheet.service.js
-    utils/
-      async-handler.js
-      http-error.js
-      time.js
+Salin file environment backend:
+
+```bash
+cd be-ts
+copy .env.example .env
 ```
 
-### Frontend
-
-```text
-fe-ts/
-  .env.example
-  index.html
-  package.json
-  tsconfig.json
-  tsconfig.node.json
-  vite.config.ts
-  src/
-    App.tsx
-    App.css
-    index.css
-    main.tsx
-    vite-env.d.ts
-    api/
-      client.ts
-    components/
-      AdminPanel.tsx
-      LoginCard.tsx
-      TimesheetEditor.tsx
-    lib/
-      calendar.ts
-    types.ts
-  public/
-    manifest.json
-    robots.txt
-```
-
-## Database Schema
-
-Prisma is the source of truth for the schema.
-
-### Users
-
-- `id`
-- `name`
-- `roleSystem` -> `admin` / `user`
-- `roleJob`
-- `department`
-- `location`
-- `project`
-- `teamLeadName`
-- `deptHeadName`
-- `username`
-- `password`
-- `createdAt`
-- `updatedAt`
-
-### Timesheets
-
-- `id`
-- `userId`
-- `period` -> `YYYY-MM`
-- `status` -> `draft` / `submitted` / `approved`
-- `createdAt`
-- `updatedAt`
-
-### Timesheet Entries
-
-- `id`
-- `timesheetId`
-- `date`
-- `dayName`
-- `startTime`
-- `lunchBreak`
-- `endTime`
-- `totalHours`
-- `activity`
-
-### Holidays
-
-- `id`
-- `date`
-- `name`
-- `isActive`
-- `createdAt`
-- `updatedAt`
-
-Relationship:
-
-- One user has many timesheets
-- One timesheet has many entries
-- One timesheet belongs to one user
-
-## Environment Setup
-
-### Backend `.env`
-
-Copy `be-ts/.env.example` to `be-ts/.env` and adjust your MySQL credentials.
-
-Required variables:
+Isi nilai berikut sesuai konfigurasi lokal:
 
 ```env
 PORT=4000
@@ -156,125 +98,315 @@ CORS_ORIGIN=http://localhost:5173
 NODE_ENV=development
 ```
 
-Note:
+Catatan:
 
-- `DATABASE_URL` is required by Prisma.
-- `DB_HOST`, `DB_USER`, `DB_PASS`, and `DB_NAME` are kept for clarity and ops parity.
+- `DATABASE_URL` digunakan oleh Prisma.
+- `CORS_ORIGIN` harus mengarah ke URL frontend Vite.
+- Gunakan `JWT_SECRET` yang kuat untuk environment non-development.
 
-### Frontend `.env`
+### Frontend
 
-Copy `fe-ts/.env.example` to `fe-ts/.env`.
+Salin file environment frontend:
+
+```bash
+cd fe-ts
+copy .env.example .env
+```
+
+Isi URL API backend:
 
 ```env
 VITE_API_URL=http://localhost:4000/api
 ```
 
-## Install & Run
+## Installation
 
-### 1. Backend
+Install dependency backend:
 
 ```bash
 cd be-ts
 npm install
-npm run prisma:generate
-npx prisma migrate dev --name init
-npm run seed
-npm run dev
 ```
 
-### 2. Frontend
+Install dependency frontend:
 
 ```bash
 cd fe-ts
 npm install
+```
+
+## Database Setup
+
+Jalankan dari folder `be-ts`:
+
+```bash
+npm run prisma:generate
+npm run migrate
+npm run seed
+```
+
+Untuk deployment atau database yang sudah memiliki migration history, gunakan:
+
+```bash
+npm run migrate:deploy
+```
+
+Jika `prisma generate` gagal karena file Prisma sedang terkunci di Windows, hentikan proses backend atau Node.js yang sedang berjalan, lalu jalankan ulang command tersebut.
+
+## Running The Application
+
+Jalankan backend:
+
+```bash
+cd be-ts
 npm run dev
 ```
 
-## Seeder Accounts
+Backend default berjalan di:
 
-The seed creates 2 users:
+```text
+http://localhost:4000
+```
 
-- Admin
-  - Username: `admin`
-  - Password: `Admin123!`
-- User
-  - Name: `Jonathan Zefanya`
-  - Role: `Programmer`
-  - Department: `PSI`
-  - Location: `BPJS Kesehatan Pusat`
-  - Project: `VClaim`
-  - Team Lead: `Muhammad Yazid Al Qahar`
-  - Dept Head: `Agung Tri Mulyanto`
-  - Username: `jonathan.zefanya`
-  - Password: `User123!`
+Jalankan frontend:
 
-## API Overview
+```bash
+cd fe-ts
+npm run dev
+```
+
+Frontend default berjalan di:
+
+```text
+http://localhost:5173
+```
+
+Jika PowerShell menolak command `npm` karena Execution Policy, gunakan `npm.cmd`, contoh:
+
+```powershell
+npm.cmd run dev
+```
+
+## Default Accounts
+
+Seeder menyediakan akun awal berikut:
+
+| Role | Username | Password |
+| --- | --- | --- |
+| Admin | `admin` | `Admin123!` |
+| User | `jonathan.zefanya` | `User123!` |
+
+Data user seed:
+
+| Field | Value |
+| --- | --- |
+| Name | Jonathan Zefanya |
+| Role Job | Programmer |
+| Department | PSI |
+| Location | BPJS Kesehatan Pusat |
+| Project | VClaim |
+| Team Lead | Muhammad Yazid Al Qahar |
+| Dept Head | Agung Tri Mulyanto |
+
+## Application Workflow
+
+1. User login ke aplikasi.
+2. User memilih periode timesheet dalam format bulan dan tahun.
+3. User mengisi start time, lunch break, end time, dan aktivitas harian.
+4. Sistem menghitung total hours secara otomatis.
+5. User menyimpan draft, submit timesheet, atau export Excel.
+6. Admin dapat mengelola user, master holiday, dan file timesheet yang sudah dibuat.
+
+## Lunch Break Rules
+
+Field `Lunch Break` mendukung dua format:
+
+| Format | Meaning | Example |
+| --- | --- | --- |
+| Duration | Durasi istirahat langsung | `01:00` |
+| Time range | Rentang jam istirahat | `12:00 - 13:00` |
+
+Contoh kalkulasi:
+
+```text
+Start Time   : 06:00
+Lunch Break  : 12:00 - 13:00
+End Time     : 11:58
+Total Hours  : 4.97
+```
+
+Jika format tidak valid, lunch break dihitung sebagai `0` agar aplikasi tidak menghasilkan nilai `NaN`.
+
+## API Reference
+
+Base URL:
+
+```text
+http://localhost:4000/api
+```
 
 ### Auth
 
-- `POST /api/auth/login`
-- `GET /api/auth/me`
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/auth/login` | Login user dan mendapatkan token |
+| GET | `/auth/me` | Mengambil profile user aktif |
 
-### User timesheet
+### User Timesheet
 
-- `GET /api/timesheets/me?period=YYYY-MM`
-- `GET /api/timesheets/me/detail?period=YYYY-MM`
-- `PUT /api/timesheets/me/:period/entries`
-- `POST /api/timesheets/me/:period/submit`
-- `GET /api/timesheets/me/:period/export`
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/timesheets/me?period=YYYY-MM` | Mengambil timesheet user aktif |
+| GET | `/timesheets/me/detail?period=YYYY-MM` | Mengambil detail timesheet dan holiday |
+| PUT | `/timesheets/me/:period/entries` | Menyimpan entry timesheet |
+| POST | `/timesheets/me/:period/submit` | Submit timesheet |
+| GET | `/timesheets/me/:period/export` | Export timesheet user ke Excel |
 
 ### Admin
 
-- `GET /api/admin/users`
-- `POST /api/admin/users`
-- `PUT /api/admin/users/:id`
-- `DELETE /api/admin/users/:id`
-- `GET /api/admin/timesheets`
-- `POST /api/admin/timesheets`
-- `GET /api/admin/timesheets/:id`
-- `PUT /api/admin/timesheets/:id`
-- `DELETE /api/admin/timesheets/:id`
-- `GET /api/admin/timesheets/:id/export`
-- `GET /api/admin/holidays`
-- `POST /api/admin/holidays`
-- `PUT /api/admin/holidays/:id`
-- `DELETE /api/admin/holidays/:id`
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/admin/users` | List user |
+| POST | `/admin/users` | Membuat user |
+| PUT | `/admin/users/:id` | Update user |
+| DELETE | `/admin/users/:id` | Delete user |
+| GET | `/admin/timesheets` | List timesheet |
+| POST | `/admin/timesheets` | Membuat timesheet |
+| GET | `/admin/timesheets/:id` | Detail timesheet |
+| PUT | `/admin/timesheets/:id` | Update timesheet |
+| DELETE | `/admin/timesheets/:id` | Delete timesheet |
+| GET | `/admin/timesheets/:id/export` | Export timesheet ke Excel |
+| GET | `/admin/holidays` | List holiday |
+| POST | `/admin/holidays` | Membuat holiday |
+| PUT | `/admin/holidays/:id` | Update holiday |
+| DELETE | `/admin/holidays/:id` | Delete holiday |
 
-## Excel Export Rules
+## Database Models
 
-Implemented with `exceljs`:
+Prisma schema adalah sumber utama struktur database.
 
-- Company header
-- Title `TIME SHEET`
-- Employee info block
-- Daily table columns:
-  - Day
-  - Date
-  - Start time
-  - Lunch Break
-  - End Time
-  - Total Hours
-  - Activity / Remark
-- Signature footer:
-  - Pemohon
-  - Mengetahui
-  - Mengetahui
+| Model | Purpose |
+| --- | --- |
+| `User` | Menyimpan data akun, role, department, project, dan approval metadata |
+| `Timesheet` | Menyimpan header timesheet per user dan periode |
+| `TimesheetEntry` | Menyimpan detail harian timesheet |
+| `Holiday` | Menyimpan master tanggal libur |
 
-Weekend rows are locked to blank time fields and the activity is set to the day name. Holiday dates are sourced from the holiday master table in MySQL and are also treated as locked rows during export.
+Relasi utama:
 
-## Workflow
+- Satu user memiliki banyak timesheet.
+- Satu timesheet memiliki banyak timesheet entry.
+- Timesheet entry otomatis ikut terhapus jika timesheet dihapus.
+- Timesheet user ikut terhapus jika user dihapus.
 
-1. Run MySQL locally and create the target database.
-2. Fill `be-ts/.env` and `fe-ts/.env`.
-3. Run migration and seed.
-4. Start backend and frontend.
-5. Login using the seeded account.
-6. Fill the monthly timesheet.
-7. Admin users can manage employee master data, holiday master data, and timesheet records directly from the dashboard.
-8. Save, submit, or export Excel.
+## Excel Export
 
-## Notes
+Export Excel menggunakan `exceljs` dan template:
 
-- Lunch break is stored as a duration string in `HH:mm` format in the current starter.
-- The backend uses Prisma for relations and migration handling.
-- The frontend UI is intentionally styled as a polished product dashboard rather than a plain admin form.
+```text
+fe-ts/public/template.xlsx
+```
+
+Output export mencakup:
+
+- Header perusahaan.
+- Judul `TIME SHEET`.
+- Informasi employee.
+- Tabel aktivitas harian.
+- Total hours.
+- Signature section untuk pemohon dan approver.
+
+Weekend dan holiday akan dikunci dari input jam kerja, lalu activity diisi otomatis sesuai nama hari atau hari libur.
+
+## Available Scripts
+
+### Backend
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Menjalankan backend dengan nodemon |
+| `npm start` | Menjalankan backend production mode |
+| `npm run prisma:generate` | Generate Prisma Client |
+| `npm run migrate` | Menjalankan Prisma migration development |
+| `npm run migrate:deploy` | Apply migration untuk environment deployed |
+| `npm run seed` | Menjalankan seeder |
+| `npm run db:studio` | Membuka Prisma Studio |
+
+### Frontend
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Menjalankan Vite development server |
+| `npm run build` | Build frontend production |
+| `npm run preview` | Preview hasil production build |
+
+## Production Build
+
+Build frontend:
+
+```bash
+cd fe-ts
+npm run build
+```
+
+Jalankan backend:
+
+```bash
+cd be-ts
+npm start
+```
+
+Pastikan environment production memiliki:
+
+- `DATABASE_URL` yang valid.
+- `JWT_SECRET` yang kuat.
+- `CORS_ORIGIN` sesuai domain frontend.
+- Migration database sudah diterapkan dengan `npm run migrate:deploy`.
+
+## Troubleshooting
+
+### Prisma Client belum ter-generate
+
+Jika muncul error:
+
+```text
+@prisma/client did not initialize yet
+```
+
+Jalankan:
+
+```bash
+cd be-ts
+npm run prisma:generate
+```
+
+### Prisma generate gagal di Windows
+
+Jika muncul error `EPERM: operation not permitted, rename ... query_engine-windows.dll.node`, hentikan proses backend atau Node.js yang sedang menggunakan Prisma, lalu jalankan ulang:
+
+```bash
+npm run prisma:generate
+```
+
+### Frontend tidak bisa akses API
+
+Periksa:
+
+- Backend berjalan di `http://localhost:4000`.
+- `fe-ts/.env` berisi `VITE_API_URL=http://localhost:4000/api`.
+- `be-ts/.env` berisi `CORS_ORIGIN=http://localhost:5173`.
+
+### Total hours menjadi `NaN`
+
+Pastikan input waktu menggunakan format berikut:
+
+- Start time: `HH:mm`
+- End time: `HH:mm`
+- Lunch break: `HH:mm` atau `HH:mm - HH:mm`
+
+## Development Notes
+
+- Jangan commit file `.env`.
+- Jalankan migration setiap ada perubahan Prisma schema.
+- Jalankan build frontend sebelum deploy.
+- Pastikan `template.xlsx` tersedia karena digunakan oleh fitur export.
