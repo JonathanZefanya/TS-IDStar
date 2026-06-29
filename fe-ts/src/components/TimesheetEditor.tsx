@@ -73,7 +73,7 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
         }
 
         setRows(generateMonthRows(period, []));
-  setHolidayDates([]);
+        setHolidayDates([]);
         setStatus('draft');
         setTotalEntries(0);
         setTotalHours('0.00');
@@ -234,14 +234,14 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
             ) : (
               rows.map((row, index) => (
                 <tr key={row.date} className={row.blocked ? 'blocked-row' : ''}>
-                  <td>
+                  <td data-label="Day">
                     <div className="day-stack">
                       <strong>{row.dayName}</strong>
                       {row.blocked ? <span className="mini-tag">{row.blockedLabel || 'Blocked'}</span> : null}
                     </div>
                   </td>
-                  <td>{row.date}</td>
-                  <td>
+                  <td data-label="Date">{row.date}</td>
+                  <td data-label="Start time">
                     <input
                       type="time"
                       value={row.startTime}
@@ -249,7 +249,7 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
                       onChange={(event) => updateRow(index, 'startTime', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Lunch Break">
                     <input
                       type="text"
                       value={row.lunchBreak}
@@ -258,7 +258,7 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
                       onChange={(event) => updateRow(index, 'lunchBreak', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="End Time">
                     <input
                       type="time"
                       value={row.endTime}
@@ -266,10 +266,10 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
                       onChange={(event) => updateRow(index, 'endTime', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Total Hours">
                     <input type="text" value={row.totalHours} readOnly />
                   </td>
-                  <td>
+                  <td data-label="Activity">
                     <input
                       type="text"
                       value={row.activity}
@@ -299,8 +299,8 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
 
       <div className="support-note">
         <div>
-          <strong>Current seed user</strong>
-          <span>{user.name} · {user.department} · {user.project}</span>
+          <strong>Current user</strong>
+          <span>{user.name} - {user.department} - {user.project}</span>
         </div>
         <p>
           Weekend dan hari libur dari master data dikunci otomatis. Activity pada hari libur akan mengikuti nama harinya.
@@ -309,3 +309,4 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
     </section>
   );
 }
+

@@ -384,11 +384,11 @@ export function AdminPanel({ user }: AdminPanelProps) {
                 <tbody>
                   {filteredUsers.map((item) => (
                     <tr key={item.id}>
-                      <td>{item.name}</td>
-                      <td>{item.username}</td>
-                      <td>{item.roleSystem}</td>
-                      <td>{item.department}</td>
-                      <td>
+                      <td data-label="Nama">{item.name}</td>
+                      <td data-label="Username">{item.username}</td>
+                      <td data-label="Role">{item.roleSystem}</td>
+                      <td data-label="Department">{item.department}</td>
+                      <td data-label="Action">
                         <div className="row-actions">
                           <button type="button" className="link-button" onClick={() => openEditUserModal(item)}>
                             Edit
@@ -467,14 +467,14 @@ export function AdminPanel({ user }: AdminPanelProps) {
                 <tbody>
                   {filteredFiles.map((item) => (
                     <tr key={item.id}>
-                      <td>{item.user?.name || '-'}</td>
-                      <td>{item.period}</td>
-                      <td>
+                      <td data-label="Employee">{item.user?.name || '-'}</td>
+                      <td data-label="Period">{item.period}</td>
+                      <td data-label="Status">
                         <span className={`status-pill status-${item.status}`}>{item.status}</span>
                       </td>
-                      <td>{item.entries?.length || 0}</td>
-                      <td>{Number(item.summary?.totalHours || 0).toFixed(2)}</td>
-                      <td>
+                      <td data-label="Entries">{item.entries?.length || 0}</td>
+                      <td data-label="Total Hours">{Number(item.summary?.totalHours || 0).toFixed(2)}</td>
+                      <td data-label="Action">
                         <div className="row-actions">
                           <button type="button" className="link-button" onClick={() => handleExportFile(item)}>
                             Export

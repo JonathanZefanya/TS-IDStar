@@ -1,30 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: 'Manrope', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #ecf3ff;
-  background:
-    radial-gradient(circle at top left, rgba(36, 211, 196, 0.2), transparent 30%),
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.14), transparent 26%),
-    linear-gradient(180deg, #07111f 0%, #0b1526 45%, #09111d 100%);
+  color: #162033;
+  background: #eef3f8;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --bg-deep: #07111f;
-  --bg-panel: rgba(11, 20, 38, 0.72);
-  --bg-panel-strong: rgba(13, 25, 47, 0.94);
-  --border-soft: rgba(148, 163, 184, 0.18);
-  --text-primary: #eef4ff;
-  --text-secondary: #a7b6cf;
-  --accent: #45d7b4;
-  --accent-2: #f6b73c;
-  --danger: #fb7185;
-  --success: #4ade80;
-  --shadow: 0 24px 80px rgba(2, 6, 23, 0.42);
+  --bg-deep: #eef3f8;
+  --surface: #ffffff;
+  --surface-muted: #f6f9fc;
+  --border-soft: #dbe5ef;
+  --text-primary: #162033;
+  --text-secondary: #64748b;
+  --accent: #14a892;
+  --accent-strong: #0f766e;
+  --accent-2: #f59e0b;
+  --danger: #e11d48;
+  --success: #059669;
+  --shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
 }
 
 * {
@@ -42,9 +40,8 @@ body {
   overflow-x: hidden;
   color: var(--text-primary);
   background:
-    radial-gradient(circle at 20% 20%, rgba(69, 215, 180, 0.14), transparent 32%),
-    radial-gradient(circle at 85% 15%, rgba(246, 183, 60, 0.16), transparent 28%),
-    linear-gradient(180deg, #06101d 0%, #091524 52%, #07111f 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(238, 243, 248, 0.94)),
+    #eef3f8;
 }
 
 a {
@@ -68,6 +65,6 @@ button {
 }
 
 ::selection {
-  background: rgba(69, 215, 180, 0.24);
-  color: #ffffff;
+  background: rgba(20, 168, 146, 0.22);
+  color: #0f172a;
 }

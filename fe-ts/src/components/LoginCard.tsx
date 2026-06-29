@@ -45,7 +45,7 @@ export function LoginCard({ onSuccess }: LoginCardProps) {
         <p className="eyebrow">Timesheet Management System</p>
         <h1>Track workdays, export clean Excel files, and keep approval flow simple.</h1>
         <p className="lead">
-          Starter UI untuk admin dan user dengan format timesheet yang bisa langsung disambungkan ke backend Express + Prisma.
+          Kelola timesheet bulanan, pantau status submit, dan export file Excel dari satu workspace yang rapi.
         </p>
 
         <div className="credential-hint">
@@ -62,7 +62,7 @@ export function LoginCard({ onSuccess }: LoginCardProps) {
 
           <label>
             Password
-            <input type="password" placeholder="••••••••" {...register('password', { required: true })} />
+            <input type="password" placeholder="Password" {...register('password', { required: true })} />
           </label>
 
           {error ? <div className="form-error">{error}</div> : null}
