@@ -21,7 +21,7 @@ Aplikasi ini terdiri dari backend Express + Prisma + MySQL dan frontend React + 
 - Login berbasis JWT untuk admin dan user.
 - Workspace user untuk input timesheet bulanan.
 - Perhitungan total jam otomatis dari start time, lunch break, dan end time.
-- Lunch break mendukung format durasi (`01:00`) dan rentang waktu (`12:00 - 13:00`).
+- Lunch break bersifat opsional dan mendukung format durasi (`01:00`) atau rentang waktu (`12:00 - 13:00`).
 - Weekend dan holiday otomatis dikunci dari input timesheet.
 - Admin dashboard untuk mengelola user, timesheet, dan master hari libur.
 - Export timesheet ke Excel menggunakan template `fe-ts/public/template.xlsx`.
@@ -219,23 +219,36 @@ Data user seed:
 
 ## Lunch Break Rules
 
-Field `Lunch Break` mendukung dua format:
+Field `Lunch Break` bersifat opsional. Jika dikosongkan, sistem tidak mengurangi jam kerja.
+
+Field ini mendukung dua format:
 
 | Format | Meaning | Example |
 | --- | --- | --- |
 | Duration | Durasi istirahat langsung | `01:00` |
 | Time range | Rentang jam istirahat | `12:00 - 13:00` |
 
-Contoh kalkulasi:
+Untuk format rentang waktu, lunch hanya dikurangi jika rentangnya masuk ke dalam jam kerja.
+
+Contoh ketika lunch belum terjadi:
 
 ```text
 Start Time   : 06:00
 Lunch Break  : 12:00 - 13:00
 End Time     : 11:58
-Total Hours  : 4.97
+Total Hours  : 5.97
 ```
 
-Jika format tidak valid, lunch break dihitung sebagai `0` agar aplikasi tidak menghasilkan nilai `NaN`.
+Contoh ketika lunch terjadi penuh:
+
+```text
+Start Time   : 08:55
+Lunch Break  : 12:00 - 13:00
+End Time     : 17:00
+Total Hours  : 7.08
+```
+
+Jika format tidak valid atau tidak overlap dengan jam kerja, lunch break dihitung sebagai `0` agar aplikasi tidak menghasilkan nilai `NaN`.
 
 ## API Reference
 
@@ -402,7 +415,7 @@ Pastikan input waktu menggunakan format berikut:
 
 - Start time: `HH:mm`
 - End time: `HH:mm`
-- Lunch break: `HH:mm` atau `HH:mm - HH:mm`
+- Lunch break: kosong, `HH:mm`, atau `HH:mm - HH:mm`
 
 ## Development Notes
 

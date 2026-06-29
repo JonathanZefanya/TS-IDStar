@@ -52,7 +52,7 @@ function timeToMinutes(value: string) {
   return hours * 60 + minutes;
 }
 
-function lunchBreakToMinutes(value: string) {
+function lunchBreakToMinutes(value: string, workStart: number, workEnd: number) {
   const normalized = normalizeLunchBreak(value);
   if (!normalized) {
     return 0;
@@ -66,7 +66,7 @@ function lunchBreakToMinutes(value: string) {
       return 0;
     }
 
-    return rangeEnd - rangeStart;
+    return Math.max(Math.min(rangeEnd, workEnd) - Math.max(rangeStart, workStart), 0);
   }
 
   const duration = timeToMinutes(normalized);
@@ -79,13 +79,13 @@ export function currentPeriod() {
 
 export function calculateTotalHours(startTime: string, lunchBreak: string, endTime: string) {
   const start = timeToMinutes(startTime);
-  const lunch = lunchBreakToMinutes(lunchBreak);
   const end = timeToMinutes(endTime);
 
   if (start === null || end === null || end <= start) {
     return '0.00';
   }
 
+  const lunch = lunchBreakToMinutes(lunchBreak, start, end);
   return (Math.max(end - start - lunch, 0) / 60).toFixed(2);
 }
 

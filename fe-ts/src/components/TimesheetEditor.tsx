@@ -254,7 +254,7 @@ export function TimesheetEditor({ user }: TimesheetEditorProps) {
                       type="text"
                       value={row.lunchBreak}
                       disabled={row.blocked}
-                      placeholder="01:00"
+                      placeholder="12:00 - 13:00"
                       onChange={(event) => updateRow(index, 'lunchBreak', event.target.value)}
                     />
                   </td>

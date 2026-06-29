@@ -106,7 +106,7 @@ function timeToMinutes(value) {
   return hours * 60 + minutes;
 }
 
-function lunchBreakToMinutes(value) {
+function lunchBreakToMinutes(value, workStart, workEnd) {
   const normalized = normalizeLunchBreak(value);
   if (!normalized) {
     return 0;
@@ -120,7 +120,7 @@ function lunchBreakToMinutes(value) {
       return 0;
     }
 
-    return rangeEnd - rangeStart;
+    return Math.max(Math.min(rangeEnd, workEnd) - Math.max(rangeStart, workStart), 0);
   }
 
   return timeToMinutes(normalized) ?? 0;
@@ -128,13 +128,13 @@ function lunchBreakToMinutes(value) {
 
 function calculateTotalHours(startTime, lunchBreak, endTime) {
   const startMinutes = timeToMinutes(startTime);
-  const lunchMinutes = lunchBreakToMinutes(lunchBreak);
   const endMinutes = timeToMinutes(endTime);
 
   if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
     return 0;
   }
 
+  const lunchMinutes = lunchBreakToMinutes(lunchBreak, startMinutes, endMinutes);
   const totalMinutes = Math.max(endMinutes - startMinutes - lunchMinutes, 0);
   return Number((totalMinutes / 60).toFixed(2));
 }
