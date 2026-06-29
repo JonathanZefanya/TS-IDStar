@@ -22,30 +22,67 @@ function normalizeTime(value: string | number | null | undefined) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
+function normalizeLunchBreak(value: string | number | null | undefined) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  const stringValue = String(value).trim();
+  if (!stringValue) {
+    return '';
+  }
+
+  const timeRange = stringValue.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+  if (!timeRange) {
+    return normalizeTime(stringValue);
+  }
+
+  const rangeStart = normalizeTime(timeRange[1]);
+  const rangeEnd = normalizeTime(timeRange[2]);
+  return rangeStart && rangeEnd ? `${rangeStart} - ${rangeEnd}` : '';
+}
+
+function timeToMinutes(value: string) {
+  const normalized = normalizeTime(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const [hours, minutes] = normalized.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function lunchBreakToMinutes(value: string) {
+  const normalized = normalizeLunchBreak(value);
+  if (!normalized) {
+    return 0;
+  }
+
+  const timeRange = normalized.match(/^(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})$/);
+  if (timeRange) {
+    const rangeStart = timeToMinutes(timeRange[1]);
+    const rangeEnd = timeToMinutes(timeRange[2]);
+    if (rangeStart === null || rangeEnd === null || rangeEnd <= rangeStart) {
+      return 0;
+    }
+
+    return rangeEnd - rangeStart;
+  }
+
+  const duration = timeToMinutes(normalized);
+  return duration ?? 0;
+}
+
 export function currentPeriod() {
   return dayjs().format('YYYY-MM');
 }
 
 export function calculateTotalHours(startTime: string, lunchBreak: string, endTime: string) {
-  const [startHours, startMinutes] = normalizeTime(startTime).split(':').map(Number);
-  const [lunchHours, lunchMinutes] = normalizeTime(lunchBreak).split(':').map(Number);
-  const [endHours, endMinutes] = normalizeTime(endTime).split(':').map(Number);
+  const start = timeToMinutes(startTime);
+  const lunch = lunchBreakToMinutes(lunchBreak);
+  const end = timeToMinutes(endTime);
 
-  if (
-    Number.isNaN(startHours) ||
-    Number.isNaN(startMinutes) ||
-    Number.isNaN(endHours) ||
-    Number.isNaN(endMinutes) ||
-    !startTime ||
-    !endTime
-  ) {
-    return '0.00';
-  }
-
-  const start = startHours * 60 + startMinutes;
-  const lunch = Number.isNaN(lunchHours) || Number.isNaN(lunchMinutes) ? 0 : lunchHours * 60 + lunchMinutes;
-  const end = endHours * 60 + endMinutes;
-  if (end <= start) {
+  if (start === null || end === null || end <= start) {
     return '0.00';
   }
 
@@ -96,7 +133,7 @@ export function generateMonthRows(period: string, entries: TimesheetEntry[] = []
     }
 
     const startTime = normalizeTime(entry.startTime);
-    const lunchBreak = normalizeTime(entry.lunchBreak);
+    const lunchBreak = normalizeLunchBreak(entry.lunchBreak);
     const endTime = normalizeTime(entry.endTime);
     const totalHours = startTime && endTime ? calculateTotalHours(startTime, lunchBreak, endTime) : '';
 

@@ -6,6 +6,7 @@ const {
   getMonthDateList,
   isWeekend,
   normalizeDateKey,
+  normalizeLunchBreak,
   normalizeTime,
   parseHolidayDates
 } = require('../utils/time');
@@ -38,7 +39,7 @@ function getEntryMap(entries = []) {
 
 function getDisplayHoursFromTimeRange(startTime, lunchBreak, endTime) {
   const normalizedStart = normalizeTime(startTime);
-  const normalizedLunch = normalizeTime(lunchBreak);
+  const normalizedLunch = normalizeLunchBreak(lunchBreak);
   const normalizedEnd = normalizeTime(endTime);
 
   if (!normalizedStart || !normalizedEnd) {
@@ -205,7 +206,7 @@ async function buildTimesheetWorkbook({ user, period, entries = [], holidayDates
     }
 
     const startTime = normalizeTime(entry?.startTime);
-    const lunchBreak = normalizeTime(entry?.lunchBreak);
+    const lunchBreak = normalizeLunchBreak(entry?.lunchBreak);
     const endTime = normalizeTime(entry?.endTime);
     const totalHours = getDisplayHoursFromTimeRange(startTime, lunchBreak, endTime);
 

@@ -76,22 +76,62 @@ function normalizeTime(value) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
+function normalizeLunchBreak(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  const stringValue = String(value).trim();
+  if (!stringValue) {
+    return '';
+  }
+
+  const timeRange = stringValue.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+  if (!timeRange) {
+    return normalizeTime(stringValue);
+  }
+
+  const rangeStart = normalizeTime(timeRange[1]);
+  const rangeEnd = normalizeTime(timeRange[2]);
+  return rangeStart && rangeEnd ? `${rangeStart} - ${rangeEnd}` : '';
+}
+
 function timeToMinutes(value) {
   const normalized = normalizeTime(value);
   if (!normalized) {
-    return 0;
+    return null;
   }
 
   const [hours, minutes] = normalized.split(':').map(Number);
   return hours * 60 + minutes;
 }
 
+function lunchBreakToMinutes(value) {
+  const normalized = normalizeLunchBreak(value);
+  if (!normalized) {
+    return 0;
+  }
+
+  const timeRange = normalized.match(/^(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})$/);
+  if (timeRange) {
+    const rangeStart = timeToMinutes(timeRange[1]);
+    const rangeEnd = timeToMinutes(timeRange[2]);
+    if (rangeStart === null || rangeEnd === null || rangeEnd <= rangeStart) {
+      return 0;
+    }
+
+    return rangeEnd - rangeStart;
+  }
+
+  return timeToMinutes(normalized) ?? 0;
+}
+
 function calculateTotalHours(startTime, lunchBreak, endTime) {
   const startMinutes = timeToMinutes(startTime);
-  const lunchMinutes = timeToMinutes(lunchBreak);
+  const lunchMinutes = lunchBreakToMinutes(lunchBreak);
   const endMinutes = timeToMinutes(endTime);
 
-  if (!startMinutes || !endMinutes || endMinutes <= startMinutes) {
+  if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
     return 0;
   }
 
@@ -127,6 +167,7 @@ module.exports = {
   isValidPeriod,
   isWeekend,
   normalizeDateKey,
+  normalizeLunchBreak,
   normalizeTime,
   parseHolidayDates,
   parsePeriod

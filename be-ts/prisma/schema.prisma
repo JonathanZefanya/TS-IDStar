@@ -46,7 +46,7 @@ model TimesheetEntry {
   date        DateTime   @db.Date
   dayName     String     @map("day_name") @db.VarChar(20)
   startTime   String     @map("start_time") @db.VarChar(5)
-  lunchBreak  String     @map("lunch_break") @db.VarChar(5)
+  lunchBreak  String     @map("lunch_break") @db.VarChar(13)
   endTime     String     @map("end_time") @db.VarChar(5)
   totalHours  Float      @map("total_hours")
   activity    String     @db.Text

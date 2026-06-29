@@ -4,6 +4,7 @@ const {
   getPeriodDateRange,
   isWeekend,
   normalizeDateKey,
+  normalizeLunchBreak,
   normalizeTime
 } = require('../utils/time');
 
@@ -40,7 +41,7 @@ function normalizeTimesheetEntry(entry, holidayDateSet) {
   const dayName = String(entry.dayName || '').trim() || date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
   const blocked = isWeekend(date) || holidayDateSet.has(dateKey);
   const startTime = blocked ? '' : normalizeTime(entry.startTime);
-  const lunchBreak = blocked ? '' : normalizeTime(entry.lunchBreak);
+  const lunchBreak = blocked ? '' : normalizeLunchBreak(entry.lunchBreak);
   const endTime = blocked ? '' : normalizeTime(entry.endTime);
   const totalHours = blocked ? 0 : calculateTotalHours(startTime, lunchBreak, endTime);
 
